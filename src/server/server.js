@@ -25,7 +25,7 @@ const tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 const users = [];
 const massFood = [];
 const food = [];
-const ball = [];
+const virus = [];
 const sockets = {};
 
 const leaderboard = [];
@@ -70,20 +70,20 @@ function addFood(toAdd) {
     }
 }
 
-function addball(toAdd) {
+function addVirus(toAdd) {
     while (toAdd--) {
-        const mass = util.randomInRange(c.ball.defaultMass.from, c.ball.defaultMass.to, true);
+        const mass = util.randomInRange(c.virus.defaultMass.from, c.virus.defaultMass.to, true);
         const radius = util.massToRadius(mass);
-        const position = c.ballUniformDisposition ? util.uniformPosition(ball, radius) : util.randomPosition(radius);
-        ball.push({
-            id: ((new Date()).getTime() + '' + ball.length) >>> 0,
+        const position = c.virusUniformDisposition ? util.uniformPosition(virus, radius) : util.randomPosition(radius);
+        virus.push({
+            id: ((new Date()).getTime() + '' + virus.length) >>> 0,
             x: position.x,
             y: position.y,
             radius: radius,
             mass: mass,
-            fill: c.ball.fill,
-            stroke: c.ball.stroke,
-            strokeWidth: c.ball.strokeWidth
+            fill: c.virus.fill,
+            stroke: c.virus.stroke,
+            strokeWidth: c.virus.strokeWidth
         });
     }
 }
@@ -228,10 +228,10 @@ function balanceMass() {
         //console.log('[DEBUG] Mass rebalanced!');
     }
 
-    const ballToAdd = c.maxball - ball.length;
+    const virusToAdd = c.maxVirus - virus.length;
 
-    if (ballToAdd > 0) {
-        addball(ballToAdd);
+    if (virusToAdd > 0) {
+        addVirus(virusToAdd);
     }
 }
 
@@ -443,7 +443,7 @@ io.on('connection', function (socket) {
             }
         }
     });
-    socket.on('2', function(ballCell) {
+    socket.on('2', function(virusCell) {
         function splitCell(cell) {
             if(cell.mass >= c.defaultPlayerMass*2) {
                 cell.mass = cell.mass/2;
@@ -459,9 +459,9 @@ io.on('connection', function (socket) {
         }
 
         if(currentPlayer.cells.length < c.limitSplit && currentPlayer.massTotal >= c.defaultPlayerMass*2) {
-            //Split single cell from ball
-            if(ballCell) {
-              splitCell(currentPlayer.cells[ballCell]);
+            //Split single cell from virus
+            if(virusCell) {
+              splitCell(currentPlayer.cells[virusCell]);
             }
             else {
               //Split all cells
@@ -565,12 +565,12 @@ function tickPlayer(currentPlayer) {
         const massEaten = massFood.map(eatMass)
             .reduce(function(a, b, c) {return b ? a.concat(c) : a; }, []);
 
-        const ballCollision = ball.map(funcFood)
+        const virusCollision = virus.map(funcFood)
            .reduce( function(a, b, c) { return b ? a.concat(c) : a; }, []);
 
-        if(ballCollision > 0 && currentCell.mass > ball[ballCollision].mass) {
-          sockets[currentPlayer.id].emit('ballSplit', z);
-          ball.splice(ballCollision, 1);
+        if(virusCollision > 0 && currentCell.mass > virus[virusCollision].mass) {
+          sockets[currentPlayer.id].emit('virusSplit', z);
+          virus.splice(virusCollision, 1);
         }
 
         const masaGanada = 0;
@@ -669,7 +669,7 @@ function sendUpdates() {
             })
             .filter(function(f) { return f; });
 
-        const visibleball  = ball
+        const visibleVirus  = virus
             .map(function(f) {
                 if ( f.x > u.x - u.screenWidth/2 - f.radius &&
                     f.x < u.x + u.screenWidth/2 + f.radius &&
@@ -725,7 +725,7 @@ function sendUpdates() {
             })
             .filter(function(f) { return f; });
 
-        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass, visibleball);
+        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass, visibleVirus);
         if (leaderboardChanged) {
             sockets[u.id].emit('leaderboard', {
                 players: users.length,
