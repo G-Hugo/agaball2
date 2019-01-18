@@ -1,13 +1,13 @@
-const io = require('socket.io-client');
-const ChatClient = require('./chat-client');
-const Canvas = require('./canvas');
-const global = require('./global');
+var io = require('socket.io-client');
+var ChatClient = require('./chat-client');
+var Canvas = require('./canvas');
+var global = require('./global');
 
-const playerNameInput = document.getElementById('playerNameInput');
-const socket;
-const reason;
+var playerNameInput = document.getElementById('playerNameInput');
+var socket;
+var reason;
 
-const debug = function(args) {
+var debug = function(args) {
     if (console && console.log) {
         console.log(args);
     }
@@ -41,14 +41,14 @@ function startGame(type) {
 
 // Checks if the nick chosen contains valid alphanumeric characters (and underscores).
 function validNick() {
-    const regex = /^\w*$/;
+    var regex = /^\w*$/;
     debug('Regex Test', regex.exec(playerNameInput.value));
     return regex.exec(playerNameInput.value) !== null;
 }
 
 window.onload = function() {
 
-    const btn = document.getElementById('startButton'),
+    var btn = document.getElementById('startButton'),
         btnS = document.getElementById('spectateButton'),
         nickErrorText = document.querySelector('#startMenu .input-error');
 
@@ -67,9 +67,9 @@ window.onload = function() {
         }
     };
 
-    const settingsMenu = document.getElementById('settingsButton');
-    const settings = document.getElementById('settings');
-    const instructions = document.getElementById('instructions');
+    var settingsMenu = document.getElementById('settingsButton');
+    var settings = document.getElementById('settings');
+    var instructions = document.getElementById('instructions');
 
     settingsMenu.onclick = function () {
         if (settings.style.maxHeight == '300px') {
@@ -80,7 +80,7 @@ window.onload = function() {
     };
 
     playerNameInput.addEventListener('keypress', function (e) {
-        const key = e.which || e.keyCode;
+        var key = e.which || e.keyCode;
 
         if (key === global.KEY_ENTER) {
             if (validNick()) {
@@ -95,11 +95,11 @@ window.onload = function() {
 
 // TODO: Break out into GameControls.
 
-const foodConfig = {
+var foodConfig = {
     border: 0,
 };
 
-const playerConfig = {
+var playerConfig = {
     border: 6,
     textColor: '#FFFFFF',
     textBorder: '#000000',
@@ -107,7 +107,7 @@ const playerConfig = {
     defaultSize: 30
 };
 
-const player = {
+var player = {
     id: -1,
     x: global.screenWidth / 2,
     y: global.screenHeight / 2,
@@ -117,31 +117,31 @@ const player = {
 };
 global.player = player;
 
-const foods = [];
-const viruses = [];
-const fireFood = [];
-const users = [];
-const leaderboard = [];
-const target = {x: player.x, y: player.y};
+var foods = [];
+var viruses = [];
+var fireFood = [];
+var users = [];
+var leaderboard = [];
+var target = {x: player.x, y: player.y};
 global.target = target;
 
 window.canvas = new Canvas();
 window.chat = new ChatClient();
 
-const visibleBorderSetting = document.getElementById('visBord');
+var visibleBorderSetting = document.getElementById('visBord');
 visibleBorderSetting.onchange = settings.toggleBorder;
 
-const showMassSetting = document.getElementById('showMass');
+var showMassSetting = document.getElementById('showMass');
 showMassSetting.onchange = settings.toggleMass;
 
-const continuitySetting = document.getElementById('continuity');
+var continuitySetting = document.getElementById('continuity');
 continuitySetting.onchange = settings.toggleContinuity;
 
-const roundFoodSetting = document.getElementById('roundFood');
+var roundFoodSetting = document.getElementById('roundFood');
 roundFoodSetting.onchange = settings.toggleRoundFood;
 
-const c = window.canvas.cv;
-const graph = c.getContext('2d');
+var c = window.canvas.cv;
+var graph = c.getContext('2d');
 
 $( "#feed" ).click(function() {
     socket.emit('1');
@@ -157,7 +157,7 @@ $( "#split" ).click(function() {
 function setupSocket(socket) {
     // Handle ping.
     socket.on('pongcheck', function () {
-        const latency = Date.now() - global.startPingTime;
+        var latency = Date.now() - global.startPingTime;
         debug('Latency: ' + latency + 'ms');
         window.chat.addSystemLine('Ping: ' + latency + 'ms');
     });
@@ -213,8 +213,8 @@ function setupSocket(socket) {
 
     socket.on('leaderboard', function (data) {
         leaderboard = data.leaderboard;
-        const status = '<span class="title">Leaderboard</span>';
-        for (const i = 0; i < leaderboard.length; i++) {
+        var status = '<span class="title">Leaderboard</span>';
+        for (var i = 0; i < leaderboard.length; i++) {
             status += '<br />';
             if (leaderboard[i].id == player.id){
                 if(leaderboard[i].name.length !== 0)
@@ -243,16 +243,16 @@ function setupSocket(socket) {
 
     // Handle movement.
     socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
-        const playerData;
-        for(const i =0; i< userData.length; i++) {
+        var playerData;
+        for(var i =0; i< userData.length; i++) {
             if(typeof(userData[i].id) == "undefined") {
                 playerData = userData[i];
                 i = userData.length;
             }
         }
         if(global.playerType == 'player') {
-            const xoffset = player.x - playerData.x;
-            const yoffset = player.y - playerData.y;
+            var xoffset = player.x - playerData.x;
+            var yoffset = player.y - playerData.y;
 
             player.x = playerData.x;
             player.y = playerData.y;
@@ -297,13 +297,13 @@ function setupSocket(socket) {
 }
 
 function drawCircle(centerX, centerY, radius, sides) {
-    const theta = 0;
-    const x = 0;
-    const y = 0;
+    var theta = 0;
+    var x = 0;
+    var y = 0;
 
     graph.beginPath();
 
-    for (const i = 0; i < sides; i++) {
+    for (var i = 0; i < sides; i++) {
         theta = (i / sides) * 2 * Math.PI;
         x = centerX + radius * Math.sin(theta);
         y = centerY + radius * Math.cos(theta);
@@ -343,37 +343,37 @@ function drawFireFood(mass) {
 }
 
 function drawPlayers(order) {
-    const start = {
+    var start = {
         x: player.x - (global.screenWidth / 2),
         y: player.y - (global.screenHeight / 2)
     };
 
-    for(const z=0; z<order.length; z++)
+    for(var z=0; z<order.length; z++)
     {
-        const userCurrent = users[order[z].nCell];
-        const cellCurrent = users[order[z].nCell].cells[order[z].nDiv];
+        var userCurrent = users[order[z].nCell];
+        var cellCurrent = users[order[z].nCell].cells[order[z].nDiv];
 
-        const x=0;
-        const y=0;
+        var x=0;
+        var y=0;
 
-        const points = 30 + ~~(cellCurrent.mass/5);
-        const increase = Math.PI * 2 / points;
+        var points = 30 + ~~(cellCurrent.mass/5);
+        var increase = Math.PI * 2 / points;
 
         graph.strokeStyle = 'hsl(' + userCurrent.hue + ', 100%, 45%)';
         graph.fillStyle = 'hsl(' + userCurrent.hue + ', 100%, 50%)';
         graph.lineWidth = playerConfig.border;
 
-        const xstore = [];
-        const ystore = [];
+        var xstore = [];
+        var ystore = [];
 
         global.spin += 0.0;
 
-        const circle = {
+        var circle = {
             x: cellCurrent.x - start.x,
             y: cellCurrent.y - start.y
         };
 
-        for (const i = 0; i < points; i++) {
+        for (var i = 0; i < points; i++) {
 
             x = cellCurrent.radius * Math.cos(global.spin) + circle.x;
             y = cellCurrent.radius * Math.sin(global.spin) + circle.y;
@@ -412,13 +412,13 @@ function drawPlayers(order) {
         graph.lineCap = 'round';
         graph.fill();
         graph.stroke();
-        const nameCell = "";
+        var nameCell = "";
         if(typeof(userCurrent.id) == "undefined")
             nameCell = player.name;
         else
             nameCell = userCurrent.name;
 
-        const fontSize = Math.max(cellCurrent.radius / 3, 12);
+        var fontSize = Math.max(cellCurrent.radius / 3, 12);
         graph.lineWidth = playerConfig.textBorderSize;
         graph.fillStyle = playerConfig.textColor;
         graph.strokeStyle = playerConfig.textBorder;
@@ -452,12 +452,12 @@ function drawgrid() {
      graph.globalAlpha = 0.15;
      graph.beginPath();
 
-    for (const x = global.xoffset - player.x; x < global.screenWidth; x += global.screenHeight / 18) {
+    for (var x = global.xoffset - player.x; x < global.screenWidth; x += global.screenHeight / 18) {
         graph.moveTo(x, 0);
         graph.lineTo(x, global.screenHeight);
     }
 
-    for (const y = global.yoffset - player.y ; y < global.screenHeight; y += global.screenHeight / 18) {
+    for (var y = global.yoffset - player.y ; y < global.screenHeight; y += global.screenHeight / 18) {
         graph.moveTo(0, y);
         graph.lineTo(global.screenWidth, y);
     }
@@ -554,9 +554,9 @@ function gameLoop() {
             if (global.borderDraw) {
                 drawborder();
             }
-            const orderMass = [];
-            for(const i=0; i<users.length; i++) {
-                for(const j=0; j<users[i].cells.length; j++) {
+            var orderMass = [];
+            for(var i=0; i<users.length; i++) {
+                for(var j=0; j<users[i].cells.length; j++) {
                     orderMass.push({
                         nCell: i,
                         nDiv: j,
