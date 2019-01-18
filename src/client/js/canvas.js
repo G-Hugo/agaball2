@@ -1,4 +1,4 @@
-var global = require('./global');
+const global = require('./global');
 
 class Canvas {
     constructor(params) {
@@ -7,7 +7,7 @@ class Canvas {
         this.reenviar = true;
         this.socket = global.socket;
         this.directions = [];
-        var self = this;
+        const self = this;
 
         this.cv = document.getElementById('cvs');
         this.cv.width = global.screenWidth;
@@ -26,10 +26,9 @@ class Canvas {
         global.canvas = this;
     }
 
-    // Function called when a key is pressed, will change direction if arrow key.
     directionDown(event) {
-    	var key = event.which || event.keyCode;
-        var self = this.parent; // have to do this so we are not using the cv object
+    	const key = event.which || event.keyCode;
+        const self = this.parent;
     	if (self.directional(key)) {
     		self.directionLock = true;
     		if (self.newDirection(key, self.directions, true)) {
@@ -39,10 +38,9 @@ class Canvas {
     	}
     }
 
-    // Function called when a key is lifted, will change direction if arrow key.
     directionUp(event) {
-    	var key = event.which || event.keyCode;
-    	if (this.directional(key)) { // this == the actual class
+    	const key = event.which || event.keyCode;
+    	if (this.directional(key)) { 
     		if (this.newDirection(key, this.directions, false)) {
     			this.updateTarget(this.directions);
     			if (this.directions.length === 0) this.directionLock = false;
@@ -51,22 +49,19 @@ class Canvas {
     	}
     }
 
-    // Updates the direction array including information about the new direction.
     newDirection(direction, list, isAddition) {
-    	var result = false;
-    	var found = false;
-    	for (var i = 0, len = list.length; i < len; i++) {
+    	const result = false;
+    	const found = false;
+    	for (const i = 0, len = list.length; i < len; i++) {
     		if (list[i] == direction) {
     			found = true;
     			if (!isAddition) {
     				result = true;
-    				// Removes the direction.
     				list.splice(i, 1);
     			}
     			break;
     		}
     	}
-    	// Adds the direction.
     	if (isAddition && found === false) {
     		result = true;
     		list.push(direction);
@@ -75,12 +70,11 @@ class Canvas {
     	return result;
     }
 
-    // Updates the target according to the directions in the directions array.
     updateTarget(list) {
     	this.target = { x : 0, y: 0 };
-    	var directionHorizontal = 0;
-    	var directionVertical = 0;
-    	for (var i = 0, len = list.length; i < len; i++) {
+    	const directionHorizontal = 0;
+    	const directionVertical = 0;
+    	for (const i = 0, len = list.length; i < len; i++) {
     		if (directionHorizontal === 0) {
     			if (list[i] == global.KEY_LEFT) directionHorizontal -= Number.MAX_VALUE;
     			else if (list[i] == global.KEY_RIGHT) directionHorizontal += Number.MAX_VALUE;
@@ -107,7 +101,6 @@ class Canvas {
     	return key == global.KEY_DOWN || key == global.KEY_UP;
     }
 
-    // Register when the mouse goes off the canvas.
     outOfBounds() {
         if (!global.continuity) {
             this.parent.target = { x : 0, y: 0 };
@@ -133,9 +126,8 @@ class Canvas {
     	}
     }
 
-    // Chat command callback functions.
     keyInput(event) {
-    	var key = event.which || event.keyCode;
+    	const key = event.which || event.keyCode;
     	if (key === global.KEY_FIREFOOD && this.parent.reenviar) {
             this.parent.socket.emit('1');
             this.parent.reenviar = false;
