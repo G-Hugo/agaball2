@@ -173,7 +173,7 @@ function movePlayer(player) {
     player.y = y/player.cells.length;
 }
 
-/*function moveMass(mass) {
+function moveMass(mass) {
     var deg = Math.atan2(mass.target.y, mass.target.x);
     var deltaY = mass.speed * Math.sin(deg);
     var deltaX = mass.speed * Math.cos(deg);
@@ -203,7 +203,7 @@ function movePlayer(player) {
     if (mass.y < borderCalc) {
         mass.y = borderCalc;
     }
-}*/
+}
 
 function balanceMass() {
     var totalMass = food.length * c.foodMass +
