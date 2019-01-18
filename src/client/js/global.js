@@ -14,7 +14,7 @@ module.exports = {
     enemySpin: -Math.PI,
     mobile: false,
     foodSides: 10,
-    virusSides: 20,
+    ballSides: 20,
 
     // Canvas
     screenWidth: window.innerWidth,
