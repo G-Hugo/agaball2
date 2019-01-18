@@ -13,7 +13,7 @@ const debug = function(args) {
     }
 };
 
-if ( /Android|webOS/i.test(navigator.userAgent) ) {
+if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
     global.mobile = true;
 }
 
