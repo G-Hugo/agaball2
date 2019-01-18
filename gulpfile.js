@@ -1,13 +1,13 @@
-const gulp = require('gulp');
-const babel = require('gulp-babel');
-const jshint = require('gulp-jshint');
-const nodemon = require('gulp-nodemon');
-const uglify = require('gulp-uglify');
-const util = require('gulp-util');
-const mocha = require('gulp-mocha');
-const todo = require('gulp-todo');
-const webpack = require('webpack-stream');
-const fs = require('fs');
+var gulp = require('gulp');
+var babel = require('gulp-babel');
+var jshint = require('gulp-jshint');
+var nodemon = require('gulp-nodemon');
+var uglify = require('gulp-uglify');
+var util = require('gulp-util');
+var mocha = require('gulp-mocha');
+var todo = require('gulp-todo');
+var webpack = require('webpack-stream');
+var fs = require('fs');
 
 
 gulp.task('build', ['build-client', 'build-server', 'test']);

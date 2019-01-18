@@ -1,4 +1,4 @@
-const global = require('./global');
+var global = require('./global');
 
 class ChatClient {
     constructor(params) {
@@ -6,9 +6,9 @@ class ChatClient {
         this.socket = global.socket;
         this.mobile = global.mobile;
         this.player = global.player;
-        const self = this;
+        var self = this;
         this.commands = {};
-        const input = document.getElementById('chatInput');
+        var input = document.getElementById('chatInput');
         input.addEventListener('keypress', this.sendChat.bind(this));
         input.addEventListener('keyup', function(key) {
             input = document.getElementById('chatInput');
@@ -21,9 +21,10 @@ class ChatClient {
         global.chatClient = this;
     }
 
+    // TODO: Break out many of these GameControls into separate classes.
 
     registerFunctions() {
-        const self = this;
+        var self = this;
         this.registerCommand('ping', 'Check your latency.', function () {
             self.checkLatency();
         });
@@ -62,70 +63,81 @@ class ChatClient {
         global.chatClient = this;
     }
 
+    // Chat box implementation for the users.
     addChatLine(name, message, me) {
         if (this.mobile) {
             return;
         }
-        const newline = document.createElement('li');
+        var newline = document.createElement('li');
 
+        // Colours the chat input correctly.
         newline.className = (me) ? 'me' : 'friend';
         newline.innerHTML = '<b>' + ((name.length < 1) ? 'An unnamed cell' : name) + '</b>: ' + message;
 
         this.appendMessage(newline);
     }
 
+    // Chat box implementation for the system.
     addSystemLine(message) {
         if (this.mobile) {
             return;
         }
-        const newline = document.createElement('li');
+        var newline = document.createElement('li');
 
+        // Colours the chat input correctly.
         newline.className = 'system';
         newline.innerHTML = message;
 
+        // Append messages to the logs.
         this.appendMessage(newline);
     }
 
+    // Places the message DOM node into the chat box.
     appendMessage(node) {
         if (this.mobile) {
             return;
         }
-        const chatList = document.getElementById('chatList');
+        var chatList = document.getElementById('chatList');
         if (chatList.childNodes.length > 10) {
             chatList.removeChild(chatList.childNodes[0]);
         }
         chatList.appendChild(node);
     }
 
+    // Sends a message or executes a command on the click of enter.
     sendChat(key) {
-        const commands = this.commands,
+        var commands = this.commands,
             input = document.getElementById('chatInput');
 
         key = key.which || key.keyCode;
 
         if (key === global.KEY_ENTER) {
-            const text = input.value.replace(/(<([^>]+)>)/ig,'');
+            var text = input.value.replace(/(<([^>]+)>)/ig,'');
             if (text !== '') {
 
+                // Chat command.
                 if (text.indexOf('-') === 0) {
-                    const args = text.substring(1).split(' ');
+                    var args = text.substring(1).split(' ');
                     if (commands[args[0]]) {
                         commands[args[0]].callback(args.slice(1));
                     } else {
                         this.addSystemLine('Unrecognized Command: ' + text + ', type -help for more info.');
                     }
 
+                // Allows for regular messages to be sent to the server.
                 } else {
                     this.socket.emit('playerChat', { sender: this.player.name, message: text });
                     this.addChatLine(this.player.name, text, true);
                 }
 
+                // Resets input.
                 input.value = '';
                 this.canvas.cv.focus();
             }
         }
     }
 
+    // Allows for addition of commands.
     registerCommand(name, description, callback) {
         this.commands[name] = {
             description: description,
@@ -133,9 +145,10 @@ class ChatClient {
         };
     }
 
+    // Allows help to print the list of all the commands and their descriptions.
     printHelp() {
-        const commands = this.commands;
-        for (const cmd in commands) {
+        var commands = this.commands;
+        for (var cmd in commands) {
             if (commands.hasOwnProperty(cmd)) {
                 this.addSystemLine('-' + cmd + ': ' + commands[cmd].description);
             }
@@ -143,14 +156,15 @@ class ChatClient {
     }
 
     checkLatency() {
+        // Ping.
         global.startPingTime = Date.now();
         this.socket.emit('pingcheck');
     }
 
     toggleDarkMode() {
-        const LIGHT = '#f2fbff',
+        var LIGHT = '#f2fbff',
             DARK = '#181818';
-        const LINELIGHT = '#000000',
+        var LINELIGHT = '#000000',
             LINEDARK = '#ffffff';
 
         if (global.backgroundColor === LIGHT) {
