@@ -39,7 +39,8 @@ function startGame(type) {
     global.socket = socket;
 }
 
-function validPseudo() {
+// Checks if the nick chosen contains valid alphanumeric characters (and underscores).
+function validNick() {
     const regex = /^\w*$/;
     debug('Regex Test', regex.exec(playerNameInput.value));
     return regex.exec(playerNameInput.value) !== null;
@@ -49,7 +50,7 @@ window.onload = function() {
 
     const btn = document.getElementById('startButton'),
         btnS = document.getElementById('spectateButton'),
-        pseudoErrorText = document.querySelector('#startMenu .input-error');
+        nickErrorText = document.querySelector('#startMenu .input-error');
 
     btnS.onclick = function () {
         startGame('spectate');
@@ -57,11 +58,12 @@ window.onload = function() {
 
     btn.onclick = function () {
 
-        if (validPseudo()) {
-            pseudoErrorText.style.opacity = 0;
+        // Checks if the nick is valid.
+        if (validNick()) {
+            nickErrorText.style.opacity = 0;
             startGame('player');
         } else {
-            pseudoErrorText.style.opacity = 1;
+            nickErrorText.style.opacity = 1;
         }
     };
 
@@ -81,16 +83,17 @@ window.onload = function() {
         const key = e.which || e.keyCode;
 
         if (key === global.KEY_ENTER) {
-            if (validPseudo()) {
-                pseudoErrorText.style.opacity = 0;
+            if (validNick()) {
+                nickErrorText.style.opacity = 0;
                 startGame('player');
             } else {
-                pseudoErrorText.style.opacity = 1;
+                nickErrorText.style.opacity = 1;
             }
         }
     });
 };
 
+// TODO: Break out into GameControls.
 
 const foodConfig = {
     border: 0,
@@ -115,7 +118,7 @@ const player = {
 global.player = player;
 
 const foods = [];
-const balles = [];
+const viruses = [];
 const fireFood = [];
 const users = [];
 const leaderboard = [];
@@ -150,13 +153,16 @@ $( "#split" ).click(function() {
     window.canvas.reenviar = false;
 });
 
+// socket stuff.
 function setupSocket(socket) {
+    // Handle ping.
     socket.on('pongcheck', function () {
         const latency = Date.now() - global.startPingTime;
         debug('Latency: ' + latency + 'ms');
         window.chat.addSystemLine('Ping: ' + latency + 'ms');
     });
 
+    // Handle error.
     socket.on('connect_failed', function () {
         socket.close();
         global.disconnected = true;
@@ -167,6 +173,7 @@ function setupSocket(socket) {
         global.disconnected = true;
     });
 
+    // Handle connection.
     socket.on('welcome', function (playerSettings) {
         player = playerSettings;
         player.name = global.playerName;
@@ -221,6 +228,7 @@ function setupSocket(socket) {
                     status += (i + 1) + '. An unnamed cell';
             }
         }
+        //status += '<br />Players: ' + data.players;
         document.getElementById('status').innerHTML = status;
     });
 
@@ -228,11 +236,13 @@ function setupSocket(socket) {
         window.chat.addSystemLine(data);
     });
 
+    // Chat.
     socket.on('serverSendPlayerChat', function (data) {
         window.chat.addChatLine(data.sender, data.message, false);
     });
 
-    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, ballList) {
+    // Handle movement.
+    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
         const playerData;
         for(const i =0; i< userData.length; i++) {
             if(typeof(userData[i].id) == "undefined") {
@@ -254,7 +264,7 @@ function setupSocket(socket) {
         }
         users = userData;
         foods = foodsList;
-        balles = ballList;
+        viruses = virusList;
         fireFood = massList;
     });
 
@@ -280,8 +290,8 @@ function setupSocket(socket) {
         socket.close();
     });
 
-    socket.on('ballSplit', function (ballCell) {
-        socket.emit('2', ballCell);
+    socket.on('virusSplit', function (virusCell) {
+        socket.emit('2', virusCell);
         reenviar = false;
     });
 }
@@ -314,13 +324,13 @@ function drawFood(food) {
                food.radius, global.foodSides);
 }
 
-function drawball(ball) {
-    graph.strokeStyle = ball.stroke;
-    graph.fillStyle = ball.fill;
-    graph.lineWidth = ball.strokeWidth;
-    drawCircle(ball.x - player.x + global.screenWidth / 2,
-               ball.y - player.y + global.screenHeight / 2,
-               ball.radius, global.ballSides);
+function drawVirus(virus) {
+    graph.strokeStyle = virus.stroke;
+    graph.fillStyle = virus.fill;
+    graph.lineWidth = virus.strokeWidth;
+    drawCircle(virus.x - player.x + global.screenWidth / 2,
+               virus.y - player.y + global.screenHeight / 2,
+               virus.radius, global.virusSides);
 }
 
 function drawFireFood(mass) {
@@ -382,6 +392,10 @@ function drawPlayers(order) {
             xstore[i] = x;
             ystore[i] = y;
         }
+        /*if (wiggle >= player.radius/ 3) inc = -1;
+        *if (wiggle <= player.radius / -3) inc = +1;
+        *wiggle += inc;
+        */
         for (i = 0; i < points; ++i) {
             if (i === 0) {
                 graph.beginPath();
@@ -456,6 +470,7 @@ function drawborder() {
     graph.lineWidth = 1;
     graph.strokeStyle = playerConfig.borderColor;
 
+    // Left-vertical.
     if (player.x <= global.screenWidth/2) {
         graph.beginPath();
         graph.moveTo(global.screenWidth/2 - player.x, 0 ? player.y > global.screenHeight/2 : global.screenHeight/2 - player.y);
@@ -464,6 +479,7 @@ function drawborder() {
         graph.stroke();
     }
 
+    // Top-horizontal.
     if (player.y <= global.screenHeight/2) {
         graph.beginPath();
         graph.moveTo(0 ? player.x > global.screenWidth/2 : global.screenWidth/2 - player.x, global.screenHeight/2 - player.y);
@@ -472,6 +488,7 @@ function drawborder() {
         graph.stroke();
     }
 
+    // Right-vertical.
     if (global.gameWidth - player.x <= global.screenWidth/2) {
         graph.beginPath();
         graph.moveTo(global.gameWidth + global.screenWidth/2 - player.x,
@@ -482,6 +499,7 @@ function drawborder() {
         graph.stroke();
     }
 
+    // Bottom-horizontal.
     if (global.gameHeight - player.y <= global.screenHeight/2) {
         graph.beginPath();
         graph.moveTo(global.gameWidth + global.screenWidth/2 - player.x,
@@ -521,7 +539,7 @@ function gameLoop() {
         graph.textAlign = 'center';
         graph.fillStyle = '#FFFFFF';
         graph.font = 'bold 30px sans-serif';
-        graph.fillText('tu es mort', global.screenWidth / 2, global.screenHeight / 2);
+        graph.fillText('You died!', global.screenWidth / 2, global.screenHeight / 2);
     }
     else if (!global.disconnected) {
         if (global.gameStart) {
@@ -531,7 +549,7 @@ function gameLoop() {
             drawgrid();
             foods.forEach(drawFood);
             fireFood.forEach(drawFireFood);
-            balles.forEach(drawball);
+            viruses.forEach(drawVirus);
 
             if (global.borderDraw) {
                 drawborder();
@@ -551,7 +569,8 @@ function gameLoop() {
             });
 
             drawPlayers(orderMass);
-            socket.emit('0', window.canvas.target); 
+            socket.emit('0', window.canvas.target); // playerSendTarget "Heartbeat".
+
         } else {
             graph.fillStyle = '#333333';
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
@@ -570,20 +589,20 @@ function gameLoop() {
         graph.font = 'bold 30px sans-serif';
         if (global.kicked) {
             if (reason !== '') {
-                graph.fillText('Tu as été kick pour :', global.screenWidth / 2, global.screenHeight / 2 - 20);
+                graph.fillText('You were kicked for:', global.screenWidth / 2, global.screenHeight / 2 - 20);
                 graph.fillText(reason, global.screenWidth / 2, global.screenHeight / 2 + 20);
             }
             else {
-                graph.fillText('Tu es kicker', global.screenWidth / 2, global.screenHeight / 2);
+                graph.fillText('You were kicked!', global.screenWidth / 2, global.screenHeight / 2);
             }
         }
         else {
-              graph.fillText('Déco', global.screenWidth / 2, global.screenHeight / 2);
+              graph.fillText('Disconnected!', global.screenWidth / 2, global.screenHeight / 2);
         }
     }
 }
 
-window.addEventListener('redimension', resize);
+window.addEventListener('resize', resize);
 
 function resize() {
     if (!socket) return;
